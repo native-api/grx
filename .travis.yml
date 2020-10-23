@@ -1,27 +1,26 @@
 language: bash
 sudo: required
-dist: focal
-env:
-- OS=ubuntu ARCH=amd64 DIST=focal
-- OS=debian ARCH=amd64 DIST=bullseye
-- OS=debian ARCH=armhf DIST=bullseye QEMU=qemu-user-static
-- OS=debian ARCH=armel DIST=bullseye QEMU=qemu-user-static
+dist: bionic
+jobs:
+  include:
+    - arch: amd64
+      env: OS=ubuntu ARCH=amd64 DIST=focal
+    - arch: amd64
+      env: OS=debian ARCH=amd64 DIST=buster
+    - arch: arm64
+      env: OS=debian ARCH=armhf DIST=buster
+    - arch: arm64
+      env: OS=debian ARCH=armel DIST=buster
 cache:
   directories:
   - "$HOME/cache"
 before_install:
 - sudo apt-add-repository --yes ppa:ev3dev/tools
 - sudo apt-get update
-- sudo apt-get install --yes debhelper pbuilder-ev3dev gobject-introspection clang-format $QEMU
-- if [ -n "$QEMU" ]; then
-    wget https://github.com/multiarch/qemu-user-static/releases/download/v5.0.0-2/qemu-arm-static;
-    chmod +x qemu-arm-static;
-    sudo mv qemu-arm-static /usr/bin/;
-  fi
+- sudo apt-get install --yes debhelper pbuilder-ev3dev gobject-introspection
 before_script:
 - pbuilder-ev3dev base
 - git checkout -B ev3dev-$DIST
 - curl -L https://github.com/ev3dev/grx/archive/ev3dev-$DIST.tar.gz | tar --strip-components=1 -xz grx-ev3dev-$DIST/debian
 script:
-- scripts/format.sh
 - pbuilder-ev3dev dev-build
